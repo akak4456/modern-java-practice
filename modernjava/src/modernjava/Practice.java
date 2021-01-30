@@ -3,60 +3,52 @@ package modernjava;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 
 public class Practice {
 	public static void main(String[] args) {
 		List<Apple> inventory = Arrays.asList(
-		        new Apple(80, "green"),
-		        new Apple(155, "green"),
-		        new Apple(120, "red")
+		        new Apple(80, Color.GREEN),
+		        new Apple(155, Color.GREEN),
+		        new Apple(120, Color.RED)
 		    );
-		
-		//List<Apple> greenApple = filterGreenApples(inventory);
-		List<Apple> greenApple = filterApples(inventory,Practice::isGreenApple);
-		System.out.println(greenApple);
-		
-		//List<Apple> heavyApple = filterHeavyApples(inventory);
-		List<Apple> heavyApple = filterApples(inventory,Practice::isHeavyApple);
-		System.out.println(heavyApple);
+		inventory.sort((Apple a1,Apple a2)->a1.getWeight().compareTo(a2.getWeight()));
+		System.out.println(inventory);
 	}
 	
-	public static List<Apple> filterGreenApples(List<Apple> inventory){
+	public static List<Apple> filterApplesByColor(List<Apple> inventory,Color color){
 		List<Apple> result = new ArrayList<>();
-		
 		for(Apple apple:inventory) {
-			if("green".equals(apple.getColor())) {
+			if(apple.getColor().equals(color)) {
 				result.add(apple);
 			}
 		}
 		return result;
 	}
 	
-	public static List<Apple> filterHeavyApples(List<Apple> inventory){
+	public static List<Apple> filterApplesByWeight(List<Apple> inventory,int weight){
 		List<Apple> result = new ArrayList<>();
-		
 		for(Apple apple:inventory) {
-			if(apple.getWeight() > 150) {
+			if(apple.getWeight() > weight) {
 				result.add(apple);
 			}
 		}
 		return result;
 	}
 	
-	public static boolean isGreenApple(Apple apple) {
-		return "green".equals(apple.getColor());
-	}
-	public static boolean isHeavyApple(Apple apple) {
-		return apple.getWeight() > 150;
-	}
-	static List<Apple> filterApples(List<Apple> inventory,Predicate<Apple> p){
+	public static List<Apple> filterApples(List<Apple> inventory, ApplePredicate p){
 		List<Apple> result = new ArrayList<>();
-		for(Apple apple: inventory) {
+		for(Apple apple:inventory) {
 			if(p.test(apple)) {
 				result.add(apple);
 			}
 		}
 		return result;
+	}
+	
+	public static void prettyPrintApple(List<Apple> inventory, AppleFormatter formatter) {
+		for(Apple apple:inventory) {
+			String output = formatter.accept(apple);
+			System.out.println(output);
+		}
 	}
 }
