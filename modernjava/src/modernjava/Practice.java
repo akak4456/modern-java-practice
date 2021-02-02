@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import static java.util.Comparator.comparing;
 
 public class Practice {
 	public static void main(String[] args) {
@@ -12,7 +13,7 @@ public class Practice {
 		        new Apple(155, Color.GREEN),
 		        new Apple(120, Color.RED)
 		    );
-		inventory.sort(Comparator.comparing((Apple a)->a.getWeight()));
+		inventory.sort(comparing(Apple::getWeight));
 		System.out.println(inventory);
 	}
 	
