@@ -2,6 +2,7 @@ package modernjava;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class Practice {
@@ -11,7 +12,7 @@ public class Practice {
 		        new Apple(155, Color.GREEN),
 		        new Apple(120, Color.RED)
 		    );
-		inventory.sort((Apple a1,Apple a2)->a1.getWeight().compareTo(a2.getWeight()));
+		inventory.sort(Comparator.comparing((Apple a)->a.getWeight()));
 		System.out.println(inventory);
 	}
 	
