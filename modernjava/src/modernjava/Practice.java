@@ -1,66 +1,88 @@
 package modernjava;
 
-import static java.util.Comparator.comparing;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.maxBy;
+import static java.util.stream.Collectors.summarizingInt;
+import static java.util.stream.Collectors.summingInt;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.filtering;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.counting;
 
-import java.util.Arrays;
+import java.util.Comparator;
+import java.util.IntSummaryStatistics;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
 public class Practice {
 	public static void main(String[] args) {
-		 Trader raoul = new Trader("Raoul", "Cambridge");
-		    Trader mario = new Trader("Mario", "Milan");
-		    Trader alan = new Trader("Alan", "Cambridge");
-		    Trader brian = new Trader("Brian", "Cambridge");
-
-		    List<Transaction> transactions = Arrays.asList(
-		        new Transaction(brian, 2011, 300),
-		        new Transaction(raoul, 2012, 1000),
-		        new Transaction(raoul, 2011, 400),
-		        new Transaction(mario, 2012, 710),
-		        new Transaction(mario, 2012, 700),
-		        new Transaction(alan, 2012, 950)
-		    );
-		    
-		    List<Transaction> q1 = transactions.stream().filter(t->t.getYear() == 2011).sorted(comparing(Transaction::getValue)).collect(toList());
-		    System.out.println(q1);
-		    
-		    List<String> q2 = transactions.stream().map(t->t.getTrader().getCity()).distinct().collect(toList());
-		    System.out.println(q2);
-		    
-		    List<Trader> q3 = transactions.stream()
-		    							.map(Transaction::getTrader)
-		    							.filter(trader -> trader.getCity().equals("Cambridge"))
-		    							.distinct()
-		    							.sorted(comparing(Trader::getName))
-		    							.collect(toList());
-		    System.out.println(q3);
-		    
-		    String q4 = transactions.stream()
-		    								.map(t->t.getTrader().getName())
-		    								.distinct()
-		    								.sorted(String::compareTo)
-		    								.reduce("",(n1,n2)->n1+n2);
-		    System.out.println(q4);
-		    boolean q5 = transactions.stream()
-		    								.anyMatch(t->t.getTrader().getCity().equals("Milan"));
-		    System.out.println(q5);
-		    
-		    transactions.stream()
-		    								.filter(t->t.getTrader().getCity().equals("Cambridge"))
-		    								.map(Transaction::getValue)
-		    								.forEach(System.out::println);
-		    
-		    Optional<Integer> maxVal = transactions.stream()
-		    					.map(Transaction::getValue)
-		    					.reduce(Integer::max);
-		    System.out.println(maxVal.get());
-		    
-		    Optional<Transaction> minVal = transactions.stream()
-					.reduce((t1,t2)->t1.getValue() < t2.getValue() ? t1:t2);
-System.out.println(minVal.get().getValue());
+		Comparator<Dish> dishCaloriesComparator = Comparator.comparingInt(Dish::getCalories);
+		List<Dish> menu = asList(
+			      new Dish("pork", false, 800, Dish.Type.MEAT),
+			      new Dish("beef", false, 700, Dish.Type.MEAT),
+			      new Dish("chicken", false, 400, Dish.Type.MEAT),
+			      new Dish("french fries", true, 530, Dish.Type.OTHER),
+			      new Dish("rice", true, 350, Dish.Type.OTHER),
+			      new Dish("season fruit", true, 120, Dish.Type.OTHER),
+			      new Dish("pizza", true, 550, Dish.Type.OTHER),
+			      new Dish("prawns", false, 400, Dish.Type.FISH),
+			      new Dish("salmon", false, 450, Dish.Type.FISH)
+			  );
+		Optional<Dish> mostCalorieDish = menu.stream().collect(maxBy(dishCaloriesComparator));
+		
+		System.out.println(mostCalorieDish.get());
+		
+		int totalCalories = menu.stream().collect(summingInt(Dish::getCalories));
+		System.out.println(totalCalories);
+		
+		IntSummaryStatistics menuStatistics = menu.stream().collect(summarizingInt(Dish::getCalories));
+		
+		System.out.println(menuStatistics);
+		
+		String shortMenu = menu.stream().map(Dish::getName).collect(joining(", "));
+		System.out.println(shortMenu);
+		
+		Map<Dish.Type,List<Dish>> dishesByType = menu.stream().collect(groupingBy(Dish::getType));
+		
+		System.out.println(dishesByType);
+		
+		Map<CaloricLevel,List<Dish>> dishesByCaloricLevel = menu.stream().collect(
+				groupingBy(dish->{
+					if(dish.getCalories() <= 400) return CaloricLevel.DIET;
+					else if(dish.getCalories() <= 700) return CaloricLevel.NORMAL;
+					else return CaloricLevel.FAT;
+				})
+		);
+		System.out.println(dishesByCaloricLevel);
+		
+		Map<Dish.Type,List<Dish>> caloricDishesByType = menu.stream()
+																.collect(groupingBy(Dish::getType,filtering(dish->dish.getCalories() > 500, toList())));
+		System.out.println(caloricDishesByType);
+		
+		Map<Dish.Type,List<String>> dishNamesByType = menu.stream()
+															.collect(groupingBy(Dish::getType,mapping(Dish::getName,toList())));
+		System.out.println(dishNamesByType);
+		
+		Map<Dish.Type,Map<CaloricLevel,List<Dish>>> dishesByTypeCaloricLevel = menu.stream().collect(groupingBy(Dish::getType,groupingBy(dish->{
+			if(dish.getCalories() <= 400)
+				return CaloricLevel.DIET;
+			else if(dish.getCalories() <= 700)
+				return CaloricLevel.NORMAL;
+			else return CaloricLevel.FAT;
+		})));
+		System.out.println(dishesByTypeCaloricLevel);
+		
+		Map<Dish.Type,Long> typesCount = menu.stream().collect(groupingBy(Dish::getType,counting()));
+		
+		System.out.println(typesCount);
+		
+		Map<Dish.Type,Optional<Dish>> mostCaloricByType = menu.stream().collect(groupingBy(Dish::getType,maxBy(Comparator.comparingInt(Dish::getCalories))));
+		
+		System.out.println(mostCaloricByType);
 	}
 
 }
