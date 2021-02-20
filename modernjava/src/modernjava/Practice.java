@@ -10,12 +10,15 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.filtering;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.partitioningBy;
+import static java.util.stream.Collectors.collectingAndThen;
 
 import java.util.Comparator;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 
 public class Practice {
@@ -83,6 +86,34 @@ public class Practice {
 		Map<Dish.Type,Optional<Dish>> mostCaloricByType = menu.stream().collect(groupingBy(Dish::getType,maxBy(Comparator.comparingInt(Dish::getCalories))));
 		
 		System.out.println(mostCaloricByType);
+		
+		Map<Boolean,List<Dish>> partitionedMenu = menu.stream().collect(partitioningBy(Dish::isVegetarian));
+		System.out.println(partitionedMenu);
+		
+		Map<Boolean,Map<Dish.Type,List<Dish>>> vegetarianDishesByType = menu.stream().collect(partitioningBy(Dish::isVegetarian,groupingBy(Dish::getType)));
+		System.out.println(vegetarianDishesByType);
+		
+		Map<Boolean,Dish> mostCaloricPartitionedByVegetarian = menu.stream().collect(partitioningBy(Dish::isVegetarian,collectingAndThen(maxBy(Comparator.comparingInt(Dish::getCalories)),Optional::get)));
+		System.out.println(mostCaloricPartitionedByVegetarian);
+		
+		Map<Boolean,List<Integer>> partitionPrimes = IntStream.rangeClosed(2, 100).boxed().collect(partitioningBy(candidate->isPrime(candidate)));
+		System.out.println(partitionPrimes);
+		
+		List<Dish> dishes = menu.stream().collect(new ToListCollector<Dish>());
+		System.out.println(dishes);
+		
+		Map<Boolean,List<Integer>> partitionPrimes2 = IntStream.rangeClosed(2, 100).boxed().collect(new PrimeNumbersCollector());
+		System.out.println(partitionPrimes2);
+	}
+	
+	public static boolean isPrime(int candidate) {
+		int candidateRoot = (int) Math.sqrt((double)candidate);
+		return IntStream.rangeClosed(2, candidateRoot).noneMatch(i->candidate%i == 0);
+	}
+	
+	public static boolean isPrime(List<Integer> primes, int candidate) {
+		int candidateRoot = (int) Math.sqrt((double)candidate);
+		return primes.stream().takeWhile(i -> i<= candidateRoot).noneMatch(i->candidate%i == 0);
 	}
 
 }
